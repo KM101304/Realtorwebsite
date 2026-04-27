@@ -1,0 +1,14 @@
+{
+  "name": "malcolm-hasman-redesign",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static luxury real estate website redesign prototype for Malcolm Hasman.",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "serve": "node scripts/serve.js",
+    "check": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
