@@ -11,8 +11,17 @@ const {
 } = require("../src/site-data");
 
 const root = path.resolve(__dirname, "..");
-const siteUrl = "https://malcolmhasman.com";
+const basePathRaw = process.env.BASE_PATH || "";
+const basePath = basePathRaw && basePathRaw !== "/" ? `/${basePathRaw.replace(/^\/|\/$/g, "")}` : "";
+const siteUrl = (process.env.SITE_URL || "https://malcolmhasman.com").replace(/\/$/g, "");
 const builtPages = [];
+
+const hrefFor = (url) => {
+  if (!url || /^(https?:|mailto:|tel:|#)/.test(url)) return url;
+  if (url === "/") return `${basePath}/` || "/";
+  if (url.startsWith("/")) return `${basePath}${url}`;
+  return url;
+};
 
 const esc = (value = "") =>
   String(value)
@@ -122,7 +131,7 @@ function header(currentPath) {
   const navLinks = nav
     .map((item) => {
       const isActive = currentPath === item.href || (item.href !== "/" && currentPath.startsWith(item.href));
-      return `<a href="${item.href}" ${isActive ? 'aria-current="page"' : ""}>${esc(item.label)}</a>`;
+      return `<a href="${hrefFor(item.href)}" ${isActive ? 'aria-current="page"' : ""}>${esc(item.label)}</a>`;
     })
     .join("");
 
@@ -133,7 +142,7 @@ function header(currentPath) {
       <a href="${contact.emailHref}">${contact.email}</a>
     </div>
     <div class="nav-shell">
-      <a class="brand" href="/" aria-label="Malcolm Hasman home">
+      <a class="brand" href="${hrefFor("/")}" aria-label="Malcolm Hasman home">
         <span>Malcolm Hasman</span>
         <small>Vancouver Luxury Real Estate</small>
       </a>
@@ -199,7 +208,7 @@ function shell({ title, description, currentPath, body, schema = [], preloadImag
   <link rel="preconnect" href="https://malcolmhasman.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   ${preloadImage ? `<link rel="preload" as="image" href="${esc(preloadImage)}">` : ""}
-  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="stylesheet" href="${hrefFor("/assets/css/styles.css")}">
   ${allSchema.map((item) => `<script type="application/ld+json">${JSON.stringify(item)}</script>`).join("\n  ")}
 </head>
 <body>
@@ -209,7 +218,7 @@ function shell({ title, description, currentPath, body, schema = [], preloadImag
     ${body}
   </main>
   ${footer()}
-  <script src="/assets/js/main.js" defer></script>
+  <script src="${hrefFor("/assets/js/main.js")}" defer></script>
 </body>
 </html>`;
 }
@@ -223,7 +232,7 @@ function ctaBand({ title = "Request a Private Conversation", text, primary = "Co
         <p>${esc(text)}</p>
       </div>
       <div class="button-row">
-        <a class="button button--dark" href="${href}">${esc(primary)}</a>
+        <a class="button button--dark" href="${hrefFor(href)}">${esc(primary)}</a>
         <a class="button button--ghost" href="${contact.phoneHref}">${contact.phoneDisplay}</a>
       </div>
     </div>
@@ -231,7 +240,7 @@ function ctaBand({ title = "Request a Private Conversation", text, primary = "Co
 }
 
 function listingCard(listing) {
-  return `<a class="listing-card" href="${slugToPath(listing.slug)}">
+  return `<a class="listing-card" href="${hrefFor(slugToPath(listing.slug))}">
     <figure>${image(listing.image, `${listing.address}, ${listing.area}`)}</figure>
     <div class="listing-card__body">
       <p class="listing-price">${esc(listing.price)}</p>
@@ -258,7 +267,7 @@ function soldCard(item) {
 }
 
 function developmentCard(item) {
-  return `<a class="listing-card development-card" href="${slugToPath(item.slug)}">
+  return `<a class="listing-card development-card" href="${hrefFor(slugToPath(item.slug))}">
     <figure>${image(item.image, item.title)}</figure>
     <div class="listing-card__body">
       <p class="listing-price">${esc(item.location)}</p>
@@ -321,8 +330,8 @@ function homePage(currentPath = "/") {
       <h1>Vancouver Luxury Real Estate, Curated by Malcolm Hasman</h1>
       <p>Discreet representation, trusted market guidance, and refined presentation for some of British Columbia's most significant homes.</p>
       <div class="button-row">
-        <a class="button button--light" href="/luxury-properties/">View Current Listings</a>
-        <a class="button button--outline-light" href="/contact-malcolm/#evaluation">Request a Property Evaluation</a>
+        <a class="button button--light" href="${hrefFor("/luxury-properties/")}">View Current Listings</a>
+        <a class="button button--outline-light" href="${hrefFor("/contact-malcolm/#evaluation")}">Request a Property Evaluation</a>
       </div>
     </div>
   </section>
@@ -342,7 +351,7 @@ function homePage(currentPath = "/") {
         <p class="eyebrow">Gallery of solds</p>
         <h2>Quiet Proof of Performance</h2>
         <p>Recent and notable sales should support confidence without overwhelming the browsing experience. The solds preview acts as market proof, then leads clearly into the full gallery.</p>
-        <a class="text-link" href="/gallery-of-solds/">View Gallery of Solds</a>
+        <a class="text-link" href="${hrefFor("/gallery-of-solds/")}">View Gallery of Solds</a>
       </div>
       <div class="sold-preview">${soldProperties.slice(0, 3).map(soldCard).join("")}</div>
     </div>
@@ -360,7 +369,7 @@ function homePage(currentPath = "/") {
           <div><strong>$5M-$30M+</strong><span>premium property positioning</span></div>
           <div><strong>Private</strong><span>qualified inquiry process</span></div>
         </div>
-        <a class="button button--ghost" href="/about-malcolm-hasman/">About Malcolm</a>
+        <a class="button button--ghost" href="${hrefFor("/about-malcolm-hasman/")}">About Malcolm</a>
       </div>
     </div>
   </section>
@@ -371,7 +380,7 @@ function homePage(currentPath = "/") {
         <p class="eyebrow">Luxury marketing</p>
         <h2>A Private Brochure Approach to Significant Homes</h2>
         <p>Photography, video, editorial property positioning, private buyer outreach, and selective launch strategy work together to make each home feel considered, protected, and properly represented.</p>
-        <a class="button button--dark" href="/luxury-marketing/">Explore Luxury Marketing</a>
+        <a class="button button--dark" href="${hrefFor("/luxury-marketing/")}">Explore Luxury Marketing</a>
       </div>
       <figure>${image(assets.marketing, "Luxury home marketing presentation")}</figure>
     </div>
@@ -384,7 +393,7 @@ function homePage(currentPath = "/") {
         <h2>Join the A-List</h2>
         <p>Join the A-List for private opportunities, exclusive listings, market updates, and select luxury property releases.</p>
       </div>
-      <a class="button button--light" href="/join-the-a-list/">Join the A-List</a>
+      <a class="button button--light" href="${hrefFor("/join-the-a-list/")}">Join the A-List</a>
     </div>
   </section>
 
@@ -566,8 +575,8 @@ function developmentDetailPage(item) {
         <p class="lead">${esc(item.summary)}</p>
         <p>For availability, private previews, comparable resale opportunities, or current market context, contact Malcolm directly.</p>
         <div class="button-row">
-          <a class="button button--dark" href="/contact-malcolm/">Request Details</a>
-          <a class="button button--ghost" href="/new-developments/">Back to New Developments</a>
+          <a class="button button--dark" href="${hrefFor("/contact-malcolm/")}">Request Details</a>
+          <a class="button button--ghost" href="${hrefFor("/new-developments/")}">Back to New Developments</a>
         </div>
       </div>
     </section>
@@ -766,21 +775,22 @@ function notFoundPage() {
     title: "Page Not Found | Malcolm Hasman",
     description: "The page could not be found. Browse current luxury listings or contact Malcolm Hasman directly.",
     currentPath: "/404.html",
-    body: `<section class="page-hero page-hero--quiet"><div class="container narrow"><p class="eyebrow">404</p><h1>Page Not Found</h1><p>The page may have moved. Current listings, solds, and contact paths remain available.</p><div class="button-row"><a class="button button--dark" href="/luxury-properties/">View Current Listings</a><a class="button button--ghost" href="/contact-malcolm/">Contact Malcolm</a></div></div></section>`
+    body: `<section class="page-hero page-hero--quiet"><div class="container narrow"><p class="eyebrow">404</p><h1>Page Not Found</h1><p>The page may have moved. Current listings, solds, and contact paths remain available.</p><div class="button-row"><a class="button button--dark" href="${hrefFor("/luxury-properties/")}">View Current Listings</a><a class="button button--ghost" href="${hrefFor("/contact-malcolm/")}">Contact Malcolm</a></div></div></section>`
   });
 }
 
 function redirectPage(target) {
-  const safeTarget = esc(target);
+  const redirectTarget = hrefFor(target);
+  const safeTarget = esc(redirectTarget);
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="refresh" content="0; url=${safeTarget}">
-  <link rel="canonical" href="${siteUrl}${safeTarget}">
+  <link rel="canonical" href="${siteUrl}${target}">
   <title>Redirecting | Malcolm Hasman</title>
-  <script>window.location.replace(${JSON.stringify(target)});</script>
+  <script>window.location.replace(${JSON.stringify(redirectTarget)});</script>
 </head>
 <body>
   <p>Redirecting to <a href="${safeTarget}">${safeTarget}</a>.</p>

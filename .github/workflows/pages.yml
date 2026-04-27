@@ -21,9 +21,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    env:
+      BASE_PATH: /Realtorwebsite
+      SITE_URL: https://km101304.github.io/Realtorwebsite
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build static site for GitHub Pages
+        run: npm run build
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
